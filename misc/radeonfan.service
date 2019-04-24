@@ -1,0 +1,9 @@
+[Unit]
+Description=Fan control daemon for Radeon GPUs
+
+[Service]
+Type=simple
+ExecStart=/usr/opt/radeonfan/bin/radeonfan
+
+[Install]
+WantedBy=multi-user.target
