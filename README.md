@@ -6,7 +6,9 @@ GPUs supported by the `amdgpu` driver.
 
 **ATTENTION**: Changing the fan speeds of your video card may overheat
 or even destroy your card! This tool comes without any warranty, if it
-destroys your hardware that's your and only your fault!
+destroys your hardware that's your and only your fault! As a safety
+measure you sould never allow temperatured over 90°C with less then
+255 PWM!
 
 
 ## Inner Workings
@@ -75,5 +77,8 @@ Can I use the default temperature / PWM tuples?
   *Power Color Radeon RX 580 Red Dragon V2 Active*. 
 
 Okay, were do I get the tuples for my card?
-* They can be read from the cards ROM (also known as the BIOS). Ask
-  Google for details.
+* They can be read from the cards ROM (also known as the BIOS). A good
+  starting point is the *Techpowerup Video BIOS Collection*, but not all
+  BIOS dumps have the tuples: https://www.techpowerup.com/vgabios/  
+  https://github.com/amezin/powerplay-table-editor is able to read the
+  fan tables for at least several GCN generations.
