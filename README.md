@@ -7,7 +7,7 @@ GPUs supported by the `amdgpu` driver.
 **ATTENTION**: Changing the fan speeds of your video card may overheat
 or even destroy your card! This tool comes without any warranty, if it
 destroys your hardware that's your and only your fault! As a safety
-measure you sould never allow temperatured over 90°C with less then
+measure you should never allow temperatured over 90°C with less then
 255 PWM!
 
 
@@ -81,4 +81,4 @@ Okay, were do I get the tuples for my card?
   starting point is the *Techpowerup Video BIOS Collection*, but not all
   BIOS dumps have the tuples: https://www.techpowerup.com/vgabios/  
   https://github.com/amezin/powerplay-table-editor is able to read the
-  fan tables for at least several GCN generations.
+  fan tables for some GCN generations.
