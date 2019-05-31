@@ -1,5 +1,6 @@
 [Unit]
 Description=Fan control daemon for Radeon GPUs
+After=systemd-user-sessions.service
 
 [Service]
 Type=simple
