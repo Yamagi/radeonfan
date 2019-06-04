@@ -194,6 +194,9 @@ func main() {
 	lasttemp := gettemp(tempctl)
 	lastpwm := pwmvalues[lasttemp]
 	setpwmspeed(pwmvalues[lasttemp], pwmspeedctrl)
+	if *debug {
+		fmt.Printf("Initialized: %v°C -> %v PWM\n", lasttemp, lastpwm)
+	}
 
 	// ...and get to work.
 	for {
@@ -202,7 +205,11 @@ func main() {
 		// The kernel may have switched us back to automatic mode.
 		// (This seems to happen at system suspend / resume)
 		setpwmmode(Manual, pwmmodectrl)
-		if getpwmspeed(pwmspeedctrl) != lastpwm {
+		curpwm := getpwmspeed(pwmspeedctrl)
+		if  curpwm != lastpwm {
+				if *debug {
+					fmt.Printf("Reinitializing: %v curpwm, %v lastpwm\n", curpwm, lastpwm)
+				}
 				setpwmspeed(pwmvalues[*tmp0], pwmspeedctrl)
 		}
 
