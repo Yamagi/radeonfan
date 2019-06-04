@@ -58,8 +58,8 @@ func gettemp(tempctl *string) int {
 }
 
 // Returns PWM level of fan.
-func getpwmspeed(pwmspeedctrl *string) int {
-	file, err := os.Open(*pwmspeedctrl)
+func getpwmmode(pwmmodectrl *string) FanMode {
+	file, err := os.Open(*pwmmodectrl)
 	if err != nil {
 		panic(err)
 	}
@@ -68,13 +68,13 @@ func getpwmspeed(pwmspeedctrl *string) int {
 	scanner := bufio.NewScanner(file)
 	scanner.Scan()
 	if err := scanner.Err(); err != nil {
-		varpanic("getpwmspeed %v: couldn't read data", *pwmspeedctrl)
+		varpanic("getpwmmode %v: couldn't read data", *pwmmodectrl)
 	}
-	speed , err := strconv.Atoi(scanner.Text())
+	mode , err := strconv.Atoi(scanner.Text())
 	if err != nil {
-		varpanic("getpwmspeed %v: couldn't read data", *pwmspeedctrl)
+		varpanic("getpwmmode %v: couldn't read data", *pwmmodectrl)
 	}
-	return speed
+	return FanMode(mode)
 }
 
 // Fan modes.
@@ -190,13 +190,15 @@ func main() {
 	defer setpwmmode(Auto, pwmmodectrl)
 
 	// Setup state...
-	setpwmmode(Manual, pwmmodectrl)
 	lasttemp := gettemp(tempctl)
-	lastpwm := pwmvalues[lasttemp]
-	setpwmspeed(pwmvalues[lasttemp], pwmspeedctrl)
 	if *debug {
-		fmt.Printf("Initialized: %v°C -> %v PWM\n", lasttemp, lastpwm)
+		fmt.Printf("Initializing: %v°C -> %v PWM\n", lasttemp, pwmvalues[lasttemp])
 	}
+	if getpwmmode(pwmmodectrl) != Manual {
+		setpwmmode(Manual, pwmmodectrl)
+	}
+	setpwmspeed(pwmvalues[lasttemp], pwmspeedctrl)
+	lastpwm := pwmvalues[lasttemp]
 
 	// ...and get to work.
 	for {
@@ -204,13 +206,14 @@ func main() {
 
 		// The kernel may have switched us back to automatic mode.
 		// (This seems to happen at system suspend / resume)
-		setpwmmode(Manual, pwmmodectrl)
-		curpwm := getpwmspeed(pwmspeedctrl)
-		if  curpwm != lastpwm {
-				if *debug {
-					fmt.Printf("Reinitializing: %v curpwm, %v lastpwm\n", curpwm, lastpwm)
-				}
-				setpwmspeed(pwmvalues[*tmp0], pwmspeedctrl)
+		if getpwmmode(pwmmodectrl) != Manual {
+			if *debug {
+				fmt.Printf("Renitializing: %v°C -> %v PWM\n", thistemp, pwmvalues[thistemp])
+			}
+			setpwmmode(Manual, pwmmodectrl)
+			setpwmspeed(pwmvalues[thistemp], pwmspeedctrl)
+			lasttemp = thistemp
+			lastpwm = pwmvalues[thistemp]
 		}
 
 		// We're always increasing if necessary.
