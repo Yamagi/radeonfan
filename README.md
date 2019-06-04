@@ -73,8 +73,9 @@ usual.
 ## FAQ
 
 Can I use the default temperature / PWM tuples?
-* Maybe, it depends on your card. The default values are taken from an
-  *Power Color Radeon RX 580 Red Dragon V2 Active*. 
+* Maybe, it depends on your card. The default values are rather
+  conservative and should be okay for most cards with 0db mode.
+  They may not work properly on cards without 0db mode. 
 
 Okay, were do I get the tuples for my card?
 * They can be read from the cards ROM (also known as the BIOS). A good

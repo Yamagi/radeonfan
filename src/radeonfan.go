@@ -149,11 +149,11 @@ func main() {
 	var pwmmodectrl = flag.String("pwmmodectrl", "/sys/class/drm/card0/device/hwmon/hwmon3/pwm1_enable", "PWM mode control file")
 	var pwmspeedctrl = flag.String("pwmspeedctrl", "/sys/class/drm/card0/device/hwmon/hwmon3/pwm1", "PWM speed control file")
 	var pwm0 = flag.Int("pwm0", 0, "First PWM point")
-	var tmp0 = flag.Int("tmp0", 65, "First temperature point")
+	var tmp0 = flag.Int("tmp0", 50, "First temperature point")
 	var pwm1 = flag.Int("pwm1", 153, "Second PWM point")
-	var tmp1 = flag.Int("tmp1", 80, "Second temperature point")
+	var tmp1 = flag.Int("tmp1", 75, "Second temperature point")
 	var pwm2 = flag.Int("pwm2", 255, "Third PWM point")
-	var tmp2 = flag.Int("tmp2", 90, "Third temperature point")
+	var tmp2 = flag.Int("tmp2", 85, "Third temperature point")
 	flag.Parse()
 
 	if *pwm1 < *pwm0 || *pwm2 < *pwm1 {
