@@ -198,7 +198,6 @@ func main() {
 		setpwmmode(Manual, pwmmodectrl)
 	}
 	setpwmspeed(pwmvalues[lasttemp], pwmspeedctrl)
-	lastpwm := pwmvalues[lasttemp]
 
 	// ...and get to work.
 	for {
@@ -213,30 +212,27 @@ func main() {
 			setpwmmode(Manual, pwmmodectrl)
 			setpwmspeed(pwmvalues[thistemp], pwmspeedctrl)
 			lasttemp = thistemp
-			lastpwm = pwmvalues[thistemp]
 		}
 
 		// We're always increasing if necessary.
 		if thistemp > lasttemp {
-			if pwmvalues[thistemp] != lastpwm {
+			if pwmvalues[thistemp] != pwmvalues[lasttemp] {
 				if *debug {
 					fmt.Printf("Increasing: %v°C -> %v PWM\n", thistemp, pwmvalues[thistemp])
 				}
 				setpwmspeed(pwmvalues[thistemp], pwmspeedctrl)
 				lasttemp = thistemp
-				lastpwm = pwmvalues[thistemp]
 			}
 		}
 
 		// We're only decreasing if we're 5°C colder.
 		if thistemp < (lasttemp - 5) {
-			if pwmvalues[thistemp] != lastpwm {
+			if pwmvalues[thistemp] != pwmvalues[lasttemp] {
 				if *debug {
 					fmt.Printf("Decreasing: %v°C -> %v PWM\n", thistemp, pwmvalues[thistemp])
 				}
 				setpwmspeed(pwmvalues[thistemp], pwmspeedctrl)
 				lasttemp = thistemp
-				lastpwm = pwmvalues[thistemp]
 			}
 		}
 
