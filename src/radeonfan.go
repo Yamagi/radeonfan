@@ -191,7 +191,7 @@ func main() {
 
 	tempcrit := gettemp(fmt.Sprintf("%s/temp1_crit", *ctrldir))
 
-	if *tmp2 > tempcrit - 5 {
+	if *tmp2 > (tempcrit - 5) {
 		varpanic("main: -tmp2 must be 5°C less than the critical temperature (%v°C) of your card", tempcrit)
 	}
 
@@ -256,7 +256,7 @@ func main() {
 		// We're always increasing if necessary.
 		// Give full speed if we're less then 5°C
 		// under the critical temperature.
-		if thistemp > tempcrit - 5 {
+		if thistemp > (tempcrit - 5) {
 			if *debug {
 				fmt.Printf("Overheating: %v°C -> %v PWM\n", thistemp, pwmmax)
 			}
