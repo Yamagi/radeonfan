@@ -33,8 +33,8 @@ func varpanic(format string, args ...interface{}) {
 }
 
 // Returns GPU temperature in degree Celsius.
-func gettemp(tempctl *string) int {
-	file, err := os.Open(*tempctl)
+func gettemp(tempctl string) int {
+	file, err := os.Open(tempctl)
 	if err != nil {
 		panic(err)
 	}
@@ -43,23 +43,23 @@ func gettemp(tempctl *string) int {
 	scanner := bufio.NewScanner(file)
 	scanner.Scan()
 	if err := scanner.Err(); err != nil {
-		varpanic("gettemp %v: couldn't read data", *tempctl)
+		varpanic("gettemp %v: couldn't read data", tempctl)
 	}
 	rawdegree, err := strconv.Atoi(scanner.Text())
 	if err != nil {
-		varpanic("gettemp %v: couldn't read data", *tempctl)
+		varpanic("gettemp %v: couldn't read data", tempctl)
 	}
 
 	degree := rawdegree / 1000
 	if degree < 0 || degree > 119 {
-		varpanic("gettemp %v: got %v°C\n", *tempctl, degree)
+		varpanic("gettemp %v: got %v°C\n", tempctl, degree)
 	}
 	return degree
 }
 
 // Returns PWM level of fan.
-func getpwmmode(pwmmodectrl *string) FanMode {
-	file, err := os.Open(*pwmmodectrl)
+func getpwmmode(pwmmodectrl string) FanMode {
+	file, err := os.Open(pwmmodectrl)
 	if err != nil {
 		panic(err)
 	}
@@ -68,11 +68,11 @@ func getpwmmode(pwmmodectrl *string) FanMode {
 	scanner := bufio.NewScanner(file)
 	scanner.Scan()
 	if err := scanner.Err(); err != nil {
-		varpanic("getpwmmode %v: couldn't read data", *pwmmodectrl)
+		varpanic("getpwmmode %v: couldn't read data", pwmmodectrl)
 	}
 	mode , err := strconv.Atoi(scanner.Text())
 	if err != nil {
-		varpanic("getpwmmode %v: couldn't read data", *pwmmodectrl)
+		varpanic("getpwmmode %v: couldn't read data", pwmmodectrl)
 	}
 	return FanMode(mode)
 }
@@ -86,8 +86,8 @@ const (
 )
 
 // Sets fan control to auto or manual.
-func setpwmmode(mode FanMode, pwmmodectrl *string) {
-	file, err := os.OpenFile(*pwmmodectrl, os.O_WRONLY, 0)
+func setpwmmode(mode FanMode, pwmmodectrl string) {
+	file, err := os.OpenFile(pwmmodectrl, os.O_WRONLY, 0)
 	if err != nil {
 		panic(err)
 	}
@@ -106,8 +106,8 @@ func setpwmmode(mode FanMode, pwmmodectrl *string) {
 }
 
 // Sets the fan speed to the given PWM level.
-func setpwmspeed(pwm int, pwmspeedctrl *string) {
-	file, err := os.OpenFile(*pwmspeedctrl, os.O_WRONLY, 0)
+func setpwmspeed(pwm int, pwmspeedctrl string) {
+	file, err := os.OpenFile(pwmspeedctrl, os.O_WRONLY, 0)
 	if err != nil {
 		panic(err)
 	}
@@ -145,9 +145,7 @@ func main() {
 
 	// Parse flags.
 	var debug = flag.Bool("debug", false, "Debug output")
-	var tempctl = flag.String("tempctl", "/sys/class/drm/card0/device/hwmon/hwmon3/temp1_input", "GPU temperature file")
-	var pwmmodectrl = flag.String("pwmmodectrl", "/sys/class/drm/card0/device/hwmon/hwmon3/pwm1_enable", "PWM mode control file")
-	var pwmspeedctrl = flag.String("pwmspeedctrl", "/sys/class/drm/card0/device/hwmon/hwmon3/pwm1", "PWM speed control file")
+	var ctrldir = flag.String("ctrldir", "/sys/class/drm/card0/device/hwmon/hwmon3/", "Dir with fan controls for the GPU")
 	var pwm0 = flag.Int("pwm0", 0, "First PWM point")
 	var tmp0 = flag.Int("tmp0", 50, "First temperature point")
 	var pwm1 = flag.Int("pwm1", 153, "Second PWM point")
@@ -155,6 +153,10 @@ func main() {
 	var pwm2 = flag.Int("pwm2", 255, "Third PWM point")
 	var tmp2 = flag.Int("tmp2", 85, "Third temperature point")
 	flag.Parse()
+
+	tempctl := fmt.Sprintf("%s/temp1_input", *ctrldir)
+	pwmmodectrl := fmt.Sprintf("%s/pwm1_enable", *ctrldir)
+	pwmspeedctrl := fmt.Sprintf("%s/pwm1", *ctrldir)
 
 	if *pwm1 < *pwm0 || *pwm2 < *pwm1 {
 		panic("main: PWM points must be monotonic, e.g. pwm0 < pwm1 < pwm2")
