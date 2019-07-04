@@ -32,6 +32,30 @@ func varpanic(format string, args ...interface{}) {
 	panic(msg)
 }
 
+// Returns PWM speed.
+func getpwmspeed(pwmctl string) int {
+	file, err := os.Open(pwmctl)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Scan()
+	if err := scanner.Err(); err != nil {
+		varpanic("getpwmspeed %v: couldn't read data", pwmctl)
+	}
+	pwmspeed, err := strconv.Atoi(scanner.Text())
+	if err != nil {
+		varpanic("getpwmspeed %v: couldn't read data", pwmctl)
+	}
+
+	if pwmspeed < 0 || pwmspeed > 255 {
+		varpanic("gettemp %v: got %v\n", pwmctl, pwmspeed)
+	}
+	return pwmspeed
+}
+
 // Returns GPU temperature in degree Celsius.
 func gettemp(tempctl string) int {
 	file, err := os.Open(tempctl)
@@ -57,7 +81,7 @@ func gettemp(tempctl string) int {
 	return degree
 }
 
-// Returns PWM level of fan.
+// Returns PWM control mode.
 func getpwmmode(pwmmodectrl string) FanMode {
 	file, err := os.Open(pwmmodectrl)
 	if err != nil {
@@ -158,6 +182,19 @@ func main() {
 	pwmmodectrl := fmt.Sprintf("%s/pwm1_enable", *ctrldir)
 	pwmspeedctrl := fmt.Sprintf("%s/pwm1", *ctrldir)
 
+	pwmmin := getpwmspeed(fmt.Sprintf("%s/pwm1_min", *ctrldir))
+	pwmmax := getpwmspeed(fmt.Sprintf("%s/pwm1_max", *ctrldir))
+
+	if *pwm1 < pwmmin || *pwm2 > pwmmax {
+		varpanic("main: PWM points must be within the PWM range (%v to %v) of your card", pwmmin, pwmmax)
+	}
+
+	tempcrit := gettemp(fmt.Sprintf("%s/temp1_crit", *ctrldir))
+
+	if *tmp2 > tempcrit - 5 {
+		varpanic("main: -tmp2 must be 5°C less than the critical temperature (%v°C) of your card", tempcrit)
+	}
+
 	if *pwm1 < *pwm0 || *pwm2 < *pwm1 {
 		panic("main: PWM points must be monotonic, e.g. pwm0 < pwm1 < pwm2")
 		if *pwm0 < 0 || *pwm2 > 255 {
@@ -217,7 +254,15 @@ func main() {
 		}
 
 		// We're always increasing if necessary.
-		if thistemp > lasttemp {
+		// Give full speed if we're less then 5°C
+		// under the critical temperature.
+		if thistemp > tempcrit - 5 {
+			if *debug {
+				fmt.Printf("Overheating: %v°C -> %v PWM\n", thistemp, pwmmax)
+			}
+			setpwmspeed(pwmmax, pwmspeedctrl)
+			lasttemp = thistemp
+		} else if thistemp > lasttemp {
 			if pwmvalues[thistemp] != pwmvalues[lasttemp] {
 				if *debug {
 					fmt.Printf("Increasing: %v°C -> %v PWM\n", thistemp, pwmvalues[thistemp])
