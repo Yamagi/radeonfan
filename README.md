@@ -6,9 +6,7 @@ GPUs supported by the `amdgpu` driver.
 
 **ATTENTION**: Changing the fan speeds of your video card may overheat
 or even destroy your card! This tool comes without any warranty, if it
-destroys your hardware that's your and only your fault! As a safety
-measure you should never allow temperatured over 90°C with less then
-255 PWM!
+destroys your hardware that's your and only your fault!
 
 
 ## Inner Workings
@@ -65,9 +63,7 @@ usual.
 * **-pwm0** and **-tmp0**: First temperature / PWM tuple.
 * **-pwm1** and **-tmp1**: Second temperature / PWM tuple.
 * **-pwm2** and **-tmp2**: Third temperature / PWM tuple.
-* **-pwmmodectrl**: Control file for PWM mode.
-* **-pwmspeedctrl**: Control file for PWM speed.
-* **-tempctl**: Control file for GPU temperature.
+* **-ctrldir**: Control directory for the GPU under /sys.
 
 
 ## FAQ
