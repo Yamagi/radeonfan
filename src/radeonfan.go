@@ -81,6 +81,14 @@ func gettemp(tempctl string) int {
 	return degree
 }
 
+// Fan modes.
+type FanMode int32
+
+const (
+	Auto FanMode = iota
+	Manual
+)
+
 // Returns PWM control mode.
 func getpwmmode(pwmmodectrl string) FanMode {
 	file, err := os.Open(pwmmodectrl)
@@ -100,14 +108,6 @@ func getpwmmode(pwmmodectrl string) FanMode {
 	}
 	return FanMode(mode)
 }
-
-// Fan modes.
-type FanMode int32
-
-const (
-	Auto FanMode = iota
-	Manual
-)
 
 // Sets fan control to auto or manual.
 func setpwmmode(mode FanMode, pwmmodectrl string) {
@@ -137,7 +137,6 @@ func setpwmspeed(pwm int, pwmspeedctrl string) {
 	}
 	defer file.Close()
 
-	// Write data,
 	data := strconv.Itoa(pwm)
 	_, err = file.WriteString(data)
 	if err != nil {
