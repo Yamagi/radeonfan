@@ -169,7 +169,7 @@ func main() {
 
 	// Parse flags.
 	var debug = flag.Bool("debug", false, "Debug output")
-	var ctrldir = flag.String("ctrldir", "/sys/class/drm/card0/device/hwmon/hwmon3/", "Dir with fan controls for the GPU")
+	var card = flag.String("card", "card0", "Card to control")
 	var pwm0 = flag.Int("pwm0", 0, "First PWM point")
 	var tmp0 = flag.Int("tmp0", 50, "First temperature point")
 	var pwm1 = flag.Int("pwm1", 153, "Second PWM point")
@@ -178,18 +178,32 @@ func main() {
 	var tmp2 = flag.Int("tmp2", 85, "Third temperature point")
 	flag.Parse()
 
-	tempctl := fmt.Sprintf("%s/temp1_input", *ctrldir)
-	pwmmodectrl := fmt.Sprintf("%s/pwm1_enable", *ctrldir)
-	pwmspeedctrl := fmt.Sprintf("%s/pwm1", *ctrldir)
+	var ctrldir string
+	for i := 0; i <=100 ; i++ {
+		testdir := fmt.Sprintf("/sys/class/drm/%v/device/hwmon/hwmon%v/", *card, i)
+		if fi, err := os.Stat(testdir); err == nil {
+			if fi.IsDir() {
+				ctrldir = testdir
+				break
+			}
+		}
+	}
+	if len(ctrldir) == 0 {
+		varpanic("main: no hwmon for %v found", *card)
+	}
 
-	pwmmin := getpwmspeed(fmt.Sprintf("%s/pwm1_min", *ctrldir))
-	pwmmax := getpwmspeed(fmt.Sprintf("%s/pwm1_max", *ctrldir))
+	tempctl := fmt.Sprintf("%s/temp1_input", ctrldir)
+	pwmmodectrl := fmt.Sprintf("%s/pwm1_enable", ctrldir)
+	pwmspeedctrl := fmt.Sprintf("%s/pwm1", ctrldir)
+
+	pwmmin := getpwmspeed(fmt.Sprintf("%s/pwm1_min", ctrldir))
+	pwmmax := getpwmspeed(fmt.Sprintf("%s/pwm1_max", ctrldir))
 
 	if *pwm1 < pwmmin || *pwm2 > pwmmax {
 		varpanic("main: PWM points must be within the PWM range (%v to %v) of your card", pwmmin, pwmmax)
 	}
 
-	tempcrit := gettemp(fmt.Sprintf("%s/temp1_crit", *ctrldir))
+	tempcrit := gettemp(fmt.Sprintf("%s/temp1_crit", ctrldir))
 
 	if *tmp2 > (tempcrit - 5) {
 		varpanic("main: -tmp2 must be 5°C less than the critical temperature (%v°C) of your card", tempcrit)
